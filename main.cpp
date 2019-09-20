@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <glm/glm.hpp>
+#include "objLoader.h"
 
 using namespace::std;
 
@@ -16,8 +18,12 @@ using namespace::std;
 #define RT3D_TEXCOORD   3
 #define RT3D_INDEX		4
 
+std::vector<glm::vec3> vertices;
+std::vector<glm::vec2> uvs;
+std::vector<glm::vec3> normals; // Won't be used at the moment.
+
 // Something went wrong - print error message and quit
-void exitFatalError(char *message)
+void exitFatalError(const char *message)
 {
     cout << message << " " << endl;
     cout << SDL_GetError();
@@ -31,15 +37,30 @@ void exitFatalError(char *message)
 // Data would normally be read from files
 GLfloat vertices[] = {	-1.0f,0.0f,0.0f,
 						0.0f,1.0f,0.0f,
-						0.0f,0.0f,0.0f, };
+						0.0f,0.0f,0.0f,
+						0.0f,0.0f,0.0f,
+						0.0f,-1.0f,0.0f,
+						1.0f,0.0f,0.0f };
 GLfloat colours[] = {	1.0f, 0.0f, 0.0f,
 						0.0f, 1.0f, 0.0f,
-						0.0f, 0.0f, 1.0f };
+						0.0f, 0.0f, 1.0f,
+						1.0f, 0.0f, 0.0f,
+						1.0f, 0.0f, 0.0f,
+						1.0f, 0.0f, 0.0f };
 GLfloat vertices2[] = {	0.0f,0.0f,0.0f,
 						0.0f,-1.0f,0.0f,
 						1.0f,0.0f,0.0f };
-GLuint meshObjects[2];
-GLuint VBOarray[3];
+GLfloat vertices3[] = { 0.0f,0.0f,0.0f,
+						0.0f,1.0f,0.0f,
+						1.0f,0.0f,0.0f };
+GLfloat vertices4[] = { -1.0f,0.0f,0.0f,
+						0.0f,0.0f,0.0f,
+						0.0f,-1.0f,0.0f };
+GLfloat colours1[] = {	1.0f, 0.0f, 0.0f,
+						1.0f, 0.0f, 0.0f,
+						1.0f, 0.0f, 0.0f };
+GLuint meshObjects[4];
+GLuint VBOarray[6];
 
 
 // loadFile - loads text file from file fname as a char* 
@@ -184,21 +205,19 @@ void draw(SDL_Window * window) {
 	glClearColor(0.5f,0.5f,0.5f,1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glBindVertexArray(meshObjects[0]);	// Bind mesh VAO
-	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw 3 vertices (one triangle)
+	//glBindVertexArray(meshObjects[0]);	// Bind mesh VAO
+	//glDrawArrays(GL_TRIANGLES, 0, 6);	// draw 3 vertices (one triangle)
 	
-	glBindVertexArray(meshObjects[1]);	// Bind mesh VAO
-	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw 3 vertices (one triangle)
+	//glBindVertexArray(meshObjects[1]);	// Bind mesh VAO
+	//glDrawArrays(GL_TRIANGLES, 0, 3);	// draw 3 vertices (one triangle)
 
-	// These are deprecated functions. If a core profile has been correctly 
-	// created, these commands should compile, but wont render anything
-	glColor3f(0.5,1.0,1.0);
-	glBegin(GL_TRIANGLES);
-		glVertex3f(0.5,0.5,0.0);
-		glVertex3f(0.7,0.5,0.0);
-		glVertex3f(0.5,0.7,0.0);
-	glEnd();
+	//glBindVertexArray(meshObjects[2]);	// Bind mesh VAO  --------------- 3rd triangle
+	//glDrawArrays(GL_TRIANGLES, 0, 3);	// draw 3 vertices (one triangle)
 
+	//glBindVertexArray(meshObjects[3]);	// Bind mesh VAO  --------------- 4th triangle
+	//glDrawArrays(GL_TRIANGLES, 0, 3);	// draw 3 vertices (one triangle)
+
+	glDrawArrays(GL_TRIANGLES, 0, vertices.size());
     SDL_GL_SwapWindow(window); // swap buffers
 }
 
@@ -206,36 +225,119 @@ void draw(SDL_Window * window) {
 void init(void) {
 	// For this simple example we'll be using the most basic of shader programs
 	initShaders("minimal.vert","minimal.frag");
-	// Going to create our mesh objects here
-	glGenVertexArrays(1, &meshObjects[0]);
+		
 	//meshObjects[0] = rt3d::createColourMesh(3, vertices, colours);
-	glBindVertexArray(meshObjects[0]);
 
-	// generate and set up the VBO for the data
-	GLuint VBO;
-	glGenBuffers(1, &VBOarray[0]);
-	// VBO for vertex data
-	glBindBuffer(GL_ARRAY_BUFFER, VBOarray[0]);
-	glBufferData(GL_ARRAY_BUFFER, 3*3*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer((GLuint)RT3D_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, 0); 
-	glEnableVertexAttribArray(RT3D_VERTEX);
-	// VBO for colour data
-	glGenBuffers(1, &VBOarray[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOarray[1]);
-	glBufferData(GL_ARRAY_BUFFER, 3*3*sizeof(GLfloat), colours, GL_STATIC_DRAW);
-	glVertexAttribPointer((GLuint)RT3D_COLOUR, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(RT3D_COLOUR);
+	// Going to create our mesh objects here
+	//glGenVertexArrays(1, &meshObjects[0]);
+	//glBindVertexArray(meshObjects[0]);
+	//// generate and set up the VBO for the data
+	//GLuint VBO;
+	//glGenBuffers(1, &VBOarray[0]);
+	//// VBO for vertex data
+	//glBindBuffer(GL_ARRAY_BUFFER, VBOarray[0]);
+	//glBufferData(GL_ARRAY_BUFFER, 18*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	//glVertexAttribPointer((GLuint)RT3D_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, 0); 
+	//glEnableVertexAttribArray(RT3D_VERTEX);
 
-	// Set up the second triangle
-	glGenVertexArrays(1, &meshObjects[1]);
-	glBindVertexArray(meshObjects[1]);
-	// VBO for vertex data
-	glGenBuffers(1, &VBOarray[2]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOarray[2]);
-	glBufferData(GL_ARRAY_BUFFER, 3*3*sizeof(GLfloat), vertices2, GL_STATIC_DRAW);
-	glVertexAttribPointer((GLuint)RT3D_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, 0); 
-	glEnableVertexAttribArray(RT3D_VERTEX);
-	glBindVertexArray(meshObjects[0]);
+	//// VBO for colour data
+	//glGenBuffers(1, &VBOarray[1]);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBOarray[1]);
+	//glBufferData(GL_ARRAY_BUFFER, 3*3*sizeof(GLfloat), colours, GL_STATIC_DRAW);
+	//glVertexAttribPointer((GLuint)RT3D_COLOUR, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	//glEnableVertexAttribArray(RT3D_COLOUR);
+
+	//glBindVertexArray(meshObjects[0]);
+	////----------------------------------------------------------------------------------------------------------------
+	
+	//// Set up the second triangle
+	//glGenVertexArrays(1, &meshObjects[1]);
+	//glBindVertexArray(meshObjects[1]);	
+	//// VBO for vertex data
+	//glGenBuffers(1, &VBOarray[2]);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBOarray[2]);
+	//glBufferData(GL_ARRAY_BUFFER, 3*3*sizeof(GLfloat), vertices2, GL_STATIC_DRAW);
+	//glVertexAttribPointer((GLuint)RT3D_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, 0); 
+	//glEnableVertexAttribArray(RT3D_VERTEX);
+	//glBindVertexArray(meshObjects[0]);
+
+	//----------------------------------------------------------------------------------------------------------------
+	// 3rd Triangle
+	//glGenVertexArrays(1, &meshObjects[2]);
+	//glBindVertexArray(meshObjects[2]);
+
+	//glGenBuffers(1, &VBOarray[3]);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBOarray[3]);
+	//glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(GLfloat), vertices3, GL_STATIC_DRAW);
+	//glVertexAttribPointer((GLuint)RT3D_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	//glEnableVertexAttribArray(RT3D_VERTEX);
+	////glBindVertexArray(meshObjects[0]);
+
+	//glGenBuffers(1, &VBOarray[4]);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBOarray[4]);
+	//glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(GLfloat), colours1, GL_STATIC_DRAW);
+	//glVertexAttribPointer((GLuint)RT3D_COLOUR, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	//glEnableVertexAttribArray(RT3D_COLOUR);
+
+	//glBindVertexArray(meshObjects[0]);
+
+	////----------------------------------------------------------------------------------------------------------------
+	//glGenVertexArrays(1, &meshObjects[3]);
+	//glBindVertexArray(meshObjects[3]);
+
+	//glGenBuffers(1, &VBOarray[5]);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBOarray[5]);
+	//glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(GLfloat), vertices4, GL_STATIC_DRAW);
+	//glVertexAttribPointer((GLuint)RT3D_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	//glEnableVertexAttribArray(RT3D_VERTEX);
+	////glBindVertexArray(meshObjects[0]);
+
+	//glGenBuffers(1, &VBOarray[4]);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBOarray[4]);
+	//glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(GLfloat), colours1, GL_STATIC_DRAW);
+	//glVertexAttribPointer((GLuint)RT3D_COLOUR, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	//glEnableVertexAttribArray(RT3D_COLOUR);
+
+	//glBindVertexArray(meshObjects[0]);
+
+
+
+	
+	bool res = loadOBJ("cube.obj", vertices, uvs, normals);
+
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+
+	GLuint uvbuffer;
+	glGenBuffers(1, &uvbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glVertexAttribPointer(
+		0,                  // attribute
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(void*)0            // array buffer offset
+	);
+
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+	glVertexAttribPointer(
+		1,                                // attribute
+		2,                                // size
+		GL_FLOAT,                         // type
+		GL_FALSE,                         // normalized?
+		0,                                // stride
+		(void*)0                          // array buffer offset
+	);
+
+	
 }
 
 
@@ -285,6 +387,7 @@ int main(int argc, char *argv[])
 		running = handleSDLEvent(sdlEvent);
 		//update();			// not used yet!
 		draw(hWindow);
+
 	}
 
 
